@@ -52,22 +52,19 @@ extension HomeVC : UITableViewDataSource {
         } else {
             cell.accessoryType = .none
         }
+        if vm.canSelect(item: item.item) {
+            cell.contentView.alpha = 1
+        } else {
+            cell.contentView.alpha = 0.25
+        }
         return cell
     }
 }
 extension HomeVC : UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item = vm.rowItems(inSection: indexPath.section)[indexPath.row]
-        let tuple : (canSelect : Bool, string : String?) = vm.canSelect(item: item)
-        if tuple.canSelect {
-            vm.add(variant: item)
-        } else {
-            DispatchQueue.main.async {
-                let alertVC = UIAlertController.init(title: "Invalid combination", message: tuple.string, preferredStyle: .alert)
-                let okAction = UIAlertAction.init(title: "Ok", style: .default, handler: nil)
-                alertVC.addAction(okAction)
-                self.present(alertVC, animated: true, completion: nil)
-            }
+        if vm.canSelect(item: item) {
+            vm.select(item: item)
         }
     }
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

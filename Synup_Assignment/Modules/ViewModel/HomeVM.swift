@@ -63,7 +63,25 @@ class HomeVM {
         }
         return true
     }
-    func canSelect(item : Variant) -> (Bool, String?) {
+    func select(item : Variant) {
+        var toBeSelectedVariants = Set(selectedVariations + [item])
+        if let currentVariantFromGroup = selectedVariations.first(where: {$0.group.id == item.group.id}){
+            toBeSelectedVariants.remove(currentVariantFromGroup)
+        }
+        for exclusionArray in  exclusions {
+            var arr = variants(forExclusions: exclusionArray)
+            let variantCombinations = Set(arr)
+            if toBeSelectedVariants.intersection(variantCombinations) == variantCombinations{
+                arr.removeAll(where: {$0.id == item.id})
+                for item in arr {
+                    selectedVariations.removeAll(where: {$0.id == item.id})
+                }
+            }
+        }
+        add(variant: item)
+        refreshUI?()
+    }
+    func canSelect(item : Variant) -> (Bool) {
         var toBeSelectedVariants = Set(selectedVariations + [item])
         if let currentVariantFromGroup = selectedVariations.first(where: {$0.group.id == item.group.id}){
             toBeSelectedVariants.remove(currentVariantFromGroup)
@@ -72,10 +90,10 @@ class HomeVM {
             let arr = variants(forExclusions: exclusionArray)
             let variantCombinations = Set(arr)
             if toBeSelectedVariants.intersection(variantCombinations) == variantCombinations{
-                return (false, "You cannot select a combination of " + arr.compactMap({$0.name}).joined(separator: " and "))
+                return (false)
             }
         }
-        return (true,nil)
+        return (true)
     }
     private func variants(forExclusions exclusions : [Exclusion]) -> [Variant]{
         return exclusions.compactMap({variant(forExclusion: $0)})
